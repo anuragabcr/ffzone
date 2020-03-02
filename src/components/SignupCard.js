@@ -1,129 +1,63 @@
 import React from 'react';
+import { Field, reduxForm } from 'redux-form';
 
 class SignupCard extends React.Component {
-    state = { name: '', email: '', number: '', password: '', rePassword: '', valid: false };
-
-    handleInput(e) {
-        switch (e.type) {
-            case 'name':
-                this.setState({ name: e.value });
-                break;
-            case 'email':
-                this.setState({ email: e.value });
-                break;
-            case 'number':
-                this.setState({ number: e.value });
-                break;
-            case 'password':
-                this.setState({ password: e.value });
-                break;
-            case 'rePassword':
-                this.setState({ rePassword: e.value });
-                break;
-            default:
-                this.setState({ number: e.value });
-        }
-
-        if(this.state.name==='' || this.state.name<3) {
-            console.log('name');
-            this.setState({valid: false})
-        }else if(this.state.email==='' || this.state.email<10) {
-            console.log('email');
-            this.setState({valid: false})
-        }else if(this.state.number==='' || this.state.number<10) {
-            console.log('num');
-            this.setState({valid: false})
-        }else if(this.state.password==='' || this.state.password<8) {
-            console.log('pass');
-            this.setState({valid: false})
-        }else if(this.state.password !== this.state.rePassword) {
-            console.log('pass2');
-            this.setState({valid: false})
-        }else {
-            console.log('true');
-            this.setState({valid:true});
-        }
+    onSubmit = (formValues) => {
+        console.log(formValues);
+        this.props.formSubmit(formValues);
     }
 
-    handleSubmit(event) {
-        event.preventDefault();
-        this.props.formSubmit({ name: this.state.name, email: this.state.email, number: this.state.number, password: this.state.password });
-    }
-
-    displayError() {
-        if (!this.props.auth) return null;
+    renderField = ({ input, label, type, meta }) => {
         return (
-            <div className="alert alert-danger" role="alert">
-                {this.props.auth.error}
+            <div className="form-group">
+                <label htmlFor={input.name}>{label}</label>
+                <input {...input} type={type} className="form-control" id={input.name} placeholder={input.name} />
+                {meta.touched && meta.error && <div className="alert alert-danger" role="alert">{meta.error}</div>}
             </div>
         );
     }
 
     render() {
-        console.log(this.state);
         return (
             <div>
-                <form onSubmit={(event) => this.handleSubmit(event)}>
-                    <div className="form-group">
-                        <label htmlFor="name">Name</label>
-                        <input 
-                            type="text" 
-                            className="form-control" 
-                            id="name" 
-                            value={this.state.name}
-                            onChange={e => this.handleInput({type: 'name', value:e.target.value})}    
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="emailS">Email address</label>
-                        <input 
-                            type="email" 
-                            className="form-control" 
-                            id="emailS" 
-                            aria-describedby="emailHelp" 
-                            value={this.state.email}
-                            onChange={e => this.handleInput({type: 'email', value:e.target.value})}
-                        />
-                        <small id="emailHelp" className="form-text text-muted">We'll never share your email with anyone else.</small>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="number">Number</label>
-                        <input 
-                            type="number" 
-                            className="form-control" 
-                            id="number" 
-                            value={this.state.number}
-                            onChange={e => this.handleInput({type: 'number', value:e.target.value})}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="passwordS">Password</label>
-                        <input 
-                            type="password" 
-                            className="form-control" 
-                            id="passwordS" 
-                            value={this.state.password}
-                            onChange={e => this.handleInput({type: 'password', value:e.target.value})}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="rePassword">Re-Password</label>
-                        <input 
-                            type="password" 
-                            className="form-control" 
-                            id="rePassword" 
-                            value={this.state.rePassword}
-                            onChange={e => this.handleInput({type: 'rePassword', value:e.target.value})}
-                        />
-                    </div>
+                <form onSubmit={this.props.handleSubmit(this.onSubmit)}>
+                    <Field name="name" component={this.renderField} type="text" label="Enter Name :" />
+                    <Field name="email" component={this.renderField} type="email" label="Enter Email :" />
+                    <Field name="number" component={this.renderField} type="number" label="Enter Number :" />
+                    <Field name="password" component={this.renderField} type="password" label="Enter Password :" />
+                    <Field name="rePassword" component={this.renderField} type="password" label="Enter Re-password :" />
                     <div className="d-flex justify-content-center">
-                        <button type="submit" disabled={!this.state.valid} className="btn btn-primary">Submit</button>
+                        <button type="submit" className="btn btn-primary">Submit</button>
                     </div>
-                    {this.displayError()}
+                    {this.props.auth && this.props.auth.error && <div className="alert alert-danger" role="alert">{this.props.auth.error}</div>}
                 </form>
             </div>
         );
     }
 }
 
-export default SignupCard;
+const validate = formValues => {
+    const errors = {};
+
+    if(!formValues.name) errors.name = 'Name is required';
+    else if(formValues.name.length < 3) errors.name = 'Name must be 3 char long';
+
+    if(!formValues.email) errors.email = 'Email is required';
+    else if(!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) errors.email = 'Email is inValid';
+    
+    if(!formValues.number) errors.number = 'Number is required';
+    else if(formValues.number.length < 10) errors.number = 'Number must be 10 char long';
+    
+    if(!formValues.password) errors.password = 'Password is required';
+    else if(formValues.password.length < 8) errors.password = 'Password must be 8 char long';
+    
+    if(!formValues.rePassword) errors.rePassword = 'Re-Password is required';
+    else if(formValues.rePassword !== formValues.password) errors.rePassword = 'Password and Re_Password must be same';
+    
+    return errors;
+}
+
+export default reduxForm({ 
+    form: 'signupForm',
+    validate
+})(SignupCard);

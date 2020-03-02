@@ -1,36 +1,18 @@
 import React from 'react';
+import { Field, reduxForm } from 'redux-form';
 
 class LoginCard extends React.Component {
-    state = { email: '', password: '', valid: false, emailError: '', passError: '' };
-
-    handleInput(e) {
-        if (e.type === 'email') {
-            this.setState({ email: e.value });
-        } else if (e.type === 'password') {
-            this.setState({ password: e.value });
-        }
-
-        if (this.state.email === '' || this.state.email.length < 8) {
-            this.setState({ valid: false });
-            this.setState({ emailError: 'Email must be atleast 8 char' });
-        } else if (this.state.password === '' || this.state.password.length < 8) {
-            this.setState({ valid: false });
-            this.setState({ passError: 'Passowrd must be atleast 8 char' });
-        } else {
-            this.setState({ valid: true });
-        }
+    onSubmit = formValues => {
+        console.log(formValues);
+        this.props.formSubmit(formValues);
     }
 
-    handleSubmit(event) {
-        event.preventDefault();
-        this.props.formSubmit({ email: this.state.email, password: this.state.password });
-    }
-
-    displayError() {
-        if (!this.props.auth) return null;
+    renderField = ({ input, type, label, meta }) => {
         return (
-            <div className="alert alert-danger" role="alert">
-                {this.props.auth.error}
+            <div className="form-group">
+                <label htmlFor={input.name}>{label}</label>
+                <input {...input} type={type} className="form-control" id={input.name} placeholder={label} />
+                {meta.touched && meta.error && <div className="alert alert-danger" role="alert">{meta.error}</div>}
             </div>
         );
     }
@@ -38,37 +20,32 @@ class LoginCard extends React.Component {
     render() {
         return (
             <div>
-                <form onSubmit={(event) => this.handleSubmit(event)}>
-                    <div className="form-group">
-                        <label htmlFor="email">Email address</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="email"
-                            aria-describedby="emailHelp"
-                            value={this.state.email}
-                            onChange={(e) => this.handleInput({ type: 'email', value: e.target.value })}
-                        />
-                        <small id="emailHelp" className="form-text text-muted">We'll never share your email with anyone else.</small>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            id="password"
-                            value={this.state.password}
-                            onChange={(e) => this.handleInput({ type: 'password', value: e.target.value })}
-                        />
-                    </div>
+                <form onSubmit={this.props.handleSubmit(this.onSubmit)}>
+                    <Field name="userId" component={this.renderField} type="text" label="Enter Email or Number " />
+                    <Field name="passwordLogin" component={this.renderField} type="password" label="Enter Password" />
                     <div className="d-flex justify-content-center">
-                        <button type="submit" disabled={!this.state.valid} className="btn btn-primary">Login</button>
+                        <button type="submit" className="btn btn-primary">Login</button>
                     </div>
-                    {this.displayError()}
+                    {this.props.auth && this.props.auth.error && <div className="alert alert-danger" role="alert">{this.props.auth.error}</div>}
                 </form>
             </div>
         );
     }
 }
 
-export default LoginCard;
+const validate = formValues => {
+    const errors = {};
+
+    if(!formValues.userId) errors.userId = 'Email or Number must be provided';
+    else if(formValues.userId.length<8) errors.userId = 'Email or Number is inValid';
+
+    if(!formValues.passwordLogin) errors.passwordLogin = 'Password must be provided';
+    else if(formValues.passwordLogin.length<8) errors.passwordLogin = 'Password must be atleast 8 char long';
+
+    return errors;
+}
+
+export default reduxForm({
+    form: 'loginForm',
+    validate
+})(LoginCard);

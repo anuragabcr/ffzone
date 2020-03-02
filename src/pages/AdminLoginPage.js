@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import LoginCard from '../components/LoginCard';
-import { adminLogin } from '../actions';
+import { adminLogin } from '../actions/auth';
 
 class AdminLoginPage extends React.Component {
     componentDidMount() {
@@ -10,8 +10,11 @@ class AdminLoginPage extends React.Component {
     }
 
     formSubmit = (userData) => {
-        console.log(this.props);
-        this.props.adminLogin(userData);
+        if(/.*\.com$/.test(userData.userId)) {
+            this.props.adminLogin({email: userData.userId, password: userData.passwordLogin});
+        }else {
+            this.props.adminLogin({uid: userData.userId, password: userData.passwordLogin});
+        }
     }
 
     render() {

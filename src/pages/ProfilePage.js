@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import AdminProfile from '../components/AdminProfile';
 import Profile from '../components/Profile';
 import Authenticate from '../components/Authenticate';
-import { logout } from '../actions';
+import { logout } from '../actions/auth';
 
 class ProfilePage extends React.Component {
     componentDidMount() {

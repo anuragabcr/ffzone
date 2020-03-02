@@ -3,11 +3,15 @@ import { connect } from 'react-redux';
 
 import LoginCard from './LoginCard';
 import SignupCard from './SignupCard';
-import { userLogin, userSignup } from '../actions';
+import { userLogin, userSignup } from '../actions/auth';
 
 class Authenticate extends React.Component {
     loginFormSubmit = (userData) => {
-        this.props.userLogin(userData);
+        if(isNaN(userData.userId)) {
+            this.props.userLogin({email:userData.userId, password: userData.passwordLogin});
+        }else {
+            this.props.userLogin({number:userData.userId, password: userData.passwordLogin});
+        }
     }
 
     signupFormSubmit = (userData) => {
